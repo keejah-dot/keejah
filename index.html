@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KEEJAH MWandu | Portfolio</title>
+  <meta name="description" content="KEEJAH MWandu - Full-stack developer & computer repair expert.">
+  <meta property="og:title" content="KEEJAH MWandu Portfolio">
+  <meta property="og:description" content="I build systems and fix computers.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { -webkit-font-smoothing:antialiased; }
+    .stars { color: gold; font-size: 1.5rem; letter-spacing: 2px; }
+    #photoCarousel .carousel-item img {
+      max-width: 600px;
+      max-height: 400px;
+      margin: 0 auto;
+      object-fit: cover;
+    }
+    .badge.tech { background: #f8f9fa; color: #212529; border: 1px solid #dee2e6; margin-right:6px; }
+    .fixed-contact { position:fixed; bottom:20px; right:20px; z-index:9999; }
+  </style>
+</head>
+<body class="bg-light text-dark">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">KEEJAH MWandu</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="py-5 text-center container">
+  <h1 class="fw-bold">I turn big ideas into working systems</h1>
+  <p class="lead text-secondary">If it’s broken, I fix it. If it doesn’t exist, I code it — from servers to laptops.</p>
+  <a id="hireBtn" href="mailto:keejahmwandu783@gmail.com" class="btn btn-success btn-lg mt-3">Hire Me</a>
+</header>
+
+<div class="container my-5">
+  <!-- Services -->
+  <section id="services" class="my-5">
+    <h2 class="mb-4 text-center">What I Offer</h2>
+    <div id="servicesRow" class="row"></div>
+  </section>
+
+  <!-- Projects -->
+  <section id="projects" class="my-5">
+    <h2 class="mb-4 text-center">Selected Projects</h2>
+    <div id="projectsRow" class="row"></div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="my-5">
+    <h2 class="text-center mb-4">My Photos</h2>
+    <div id="galleryContainer"></div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="my-5">
+    <div class="row">
+      <div class="col-md-8">
+        <h2>About Me</h2>
+        <p class="text-secondary">
+          I’m a hands-on developer and systems thinker who enjoys turning complex problems into clear, maintainable solutions. My work focuses on building tools that help people and organizations operate more efficiently — especially in public sector and governance contexts.
+        </p>
+        <p class="text-secondary">
+          I also provide reliable computer repair and support services — diagnosing hardware issues, upgrading systems, and keeping machines running smoothly.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <h3 class="h5">Skills</h3>
+        <ul id="skillsList" class="list-unstyled"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ratings (optional) -->
+  <section id="ratingsSection" class="my-5 d-none">
+    <div class="p-4 bg-white rounded shadow-sm text-center">
+      <h2>Client Ratings</h2>
+      <div id="stars" class="stars"></div>
+      <p id="avgRatingText" class="fs-5 mb-1"></p>
+      <p id="totalRatingsText" class="text-secondary mb-2"></p>
+      <a href="feedback.html" class="btn btn-outline-primary">See all feedback / Rate my work</a>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="my-5">
+    <h2 class="text-center mb-4">What People Say</h2>
+    <div id="testimonialsRow" class="row"></div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="my-5">
+    <div class="p-4 bg-white rounded shadow-sm text-center">
+      <h2>Let’s build or fix something</h2>
+      <p class="text-secondary">Available for web projects, e-governance, and computer support.</p>
+      <a id="emailPrimary" href="mailto:keejahmwandu783@gmail.com?subject=Hello%20from%20your%20portfolio" class="btn btn-primary m-2">Email Me</a>
+      <a id="downloadCv" href="KEEJAH_CV.pdf" class="btn btn-outline-secondary m-2" download>Download CV</a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="py-4 text-center text-secondary small">
+  © <span id="year"></span> KEEJAH MWandu — Builder · Problem-solver · Computer fixer.
+</footer>
+
+<a id="floatingContact" href="mailto:keejahmwandu783@gmail.com"
+   class="btn btn-primary btn-lg shadow fixed-contact">
+  Contact Me
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/*
+  Static data (edit in this file)
+  - Replace image filenames in images[] with the files you add to the /images folder
+  - Edit projects/services/skills/testimonials below
+*/
+
+const projects = [
+  {
+    title: 'E-Governance System',
+    description: 'A modular e-governance platform for managing citizen requests, workflows, and reporting.',
+    tech: ['PHP','MySQL','React'],
+    link: '#'
+  },
+  {
+    title: 'Citizen Portal (Demo)',
+    description: 'A smooth, mobile-first front end for citizen interactions and service requests.',
+    tech: ['Tailwind','React','Node.js'],
+    link: '#'
+  },
+  {
+    title: 'Automation Scripts',
+    description: 'Collection of CLI tools and scripts that automate repetitive tasks and reporting.',
+    tech: ['Python','Bash'],
+    link: '#'
+  }
+];
+
+const services = [
+  { title: 'Web Development', desc: 'Custom websites and portals built with PHP, MySQL, and modern front-ends.' },
+  { title: 'E-Governance Systems', desc: 'Design and implementation of citizen service platforms and workflows.' },
+  { title: 'Computer Repair & Support', desc: 'Hardware troubleshooting, virus removal, system upgrades and maintenance.' },
+  { title: 'Automation & Scripting', desc: 'Scripts that save time by automating repetitive tasks and reporting.' }
+];
+
+const skills = [
+  'Full-stack web development',
+  'System design & troubleshooting',
+  'Databases (MySQL, Postgres)',
+  'APIs & integrations',
+  'DevOps basics (Docker, CI)',
+  'Computer repair & hardware diagnostics'
+];
+
+const testimonials = [
+  { text: 'Keen problem-solver who built our system and fixed our laptops fast.', author: 'Happy Client' },
+  { text: 'Delivered our portal ahead of schedule and trained our team.', author: 'Satisfied Customer' }
+];
+
+/*
+  Images: put image files into /images and reference them below.
+  Example: 'images/photo1.jpg', 'images/office.jpg'
+  If you don't have images yet, leave the array empty.
+*/
+const images = [
+  'images/IMG_20250924_192218.jpg',
+  'images/IMG_20251003_013701.jpg',
+  'images/Untitled.jpeg'
+];
+
+/* Optional static rating values (client-side only). Set avgRating to 0 to hide. */
+const avgRating = 4.6; // set to 0 to hide ratings block
+const totalRatings = 18;
+
+// Render functions
+function renderServices(){
+  const row = document.getElementById('servicesRow');
+  row.innerHTML = '';
+  services.forEach(s => {
+    const col = document.createElement('div');
+    col.className = 'col-md-3 mb-4';
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">${s.title}</h5>
+          <p class="small text-secondary">${s.desc}</p>
+        </div>
+      </div>
+    `;
+    row.appendChild(col);
+  });
+}
+
+function renderProjects(){
+  const row = document.getElementById('projectsRow');
+  row.innerHTML = '';
+  projects.forEach(p => {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 mb-4';
+    const techBadges = p.tech.map(t => `<span class="badge tech">${t}</span>`).join('');
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">${p.title}</h5>
+          <p class="card-text small">${p.description}</p>
+          <p class="small text-muted">${techBadges}</p>
+          <a href="${p.link}" class="stretched-link text-primary">Demo ↗</a>
+        </div>
+      </div>
+    `;
+    row.appendChild(col);
+  });
+}
+
+function renderSkills(){
+  const ul = document.getElementById('skillsList');
+  ul.innerHTML = '';
+  skills.forEach(s => {
+    const li = document.createElement('li');
+    li.className = 'mb-2';
+    li.innerHTML = `• ${s}`;
+    ul.appendChild(li);
+  });
+}
+
+function renderTestimonials(){
+  const row = document.getElementById('testimonialsRow');
+  row.innerHTML = '';
+  testimonials.forEach(t => {
+    const col = document.createElement('div');
+    col.className = 'col-md-6 mb-3';
+    col.innerHTML = `
+      <div class="card shadow-sm p-4 h-100">
+        <blockquote class="blockquote mb-0">
+          “${t.text}”
+          <footer class="blockquote-footer">${t.author}</footer>
+        </blockquote>
+      </div>
+    `;
+    row.appendChild(col);
+  });
+}
+
+function renderGallery(){
+  const container = document.getElementById('galleryContainer');
+  container.innerHTML = '';
+  if(!images || images.length === 0){
+    const p = document.createElement('p');
+    p.className = 'text-center text-muted';
+    p.innerHTML = 'No images found. Add files to the <code>images/</code> folder and update the <code>images</code> array in <code>index.html</code>.';
+    container.appendChild(p);
+    return;
+  }
+
+  // create carousel
+  const carouselId = 'photoCarousel';
+  const carousel = document.createElement('div');
+  carousel.className = 'carousel slide';
+  carousel.id = carouselId;
+  carousel.setAttribute('data-bs-ride','carousel');
+  carousel.setAttribute('data-bs-interval','3000');
+
+  const inner = document.createElement('div');
+  inner.className = 'carousel-inner';
+
+  images.forEach((src, i) => {
+    const item = document.createElement('div');
+    item.className = 'carousel-item' + (i===0 ? ' active' : '');
+    item.innerHTML = `<img src="${src}" class="d-block w-100 rounded" alt="Photo ${i+1}" onerror="this.style.opacity=.2; this.nextElementSibling?.classList?.remove('d-none')">`;
+    inner.appendChild(item);
+  });
+
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'carousel-control-prev';
+  prevBtn.type = 'button';
+  prevBtn.setAttribute('data-bs-target', '#' + carouselId);
+  prevBtn.setAttribute('data-bs-slide','prev');
+  prevBtn.innerHTML = '<span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span>';
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'carousel-control-next';
+  nextBtn.type = 'button';
+  nextBtn.setAttribute('data-bs-target', '#' + carouselId);
+  nextBtn.setAttribute('data-bs-slide','next');
+  nextBtn.innerHTML = '<span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span>';
+
+  carousel.appendChild(inner);
+  carousel.appendChild(prevBtn);
+  carousel.appendChild(nextBtn);
+  container.appendChild(carousel);
+}
+
+function renderRatings(){
+  if(!avgRating || avgRating <= 0){
+    document.getElementById('ratingsSection').classList.add('d-none');
+    return;
+  }
+  document.getElementById('ratingsSection').classList.remove('d-none');
+  const starsEl = document.getElementById('stars');
+  const rounded = Math.round(avgRating);
+  let stars = '';
+  for(let i=1;i<=5;i++) stars += (i<=rounded)?'★':'☆';
+  starsEl.textContent = stars;
+  document.getElementById('avgRatingText').textContent = avgRating + '/5';
+  document.getElementById('totalRatingsText').textContent = totalRatings + ' reviews';
+}
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Call renderers
+renderServices();
+renderProjects();
+renderSkills();
+renderTestimonials();
+renderGallery();
+renderRatings();
+
+</script>
+</body>
+</html>

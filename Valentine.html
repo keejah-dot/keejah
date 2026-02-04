@@ -310,6 +310,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-30px); }
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -317,6 +322,10 @@
 
         .fade-in {
             animation: fadeIn 1s ease-out forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
         }
 
         .pulse {
@@ -327,9 +336,9 @@
             display: none !important;
         }
 
-        /* Secret message modal */
+        /* Secret message modal - FIXED WITH BETTER Z-INDEX */
         .secret-modal {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -340,7 +349,7 @@
             border: 3px solid #ff5e7d;
             max-width: 600px;
             width: 90%;
-            z-index: 100;
+            z-index: 1000;
             text-align: center;
             box-shadow: 0 0 100px rgba(255, 94, 125, 0.5);
             pointer-events: all;
@@ -372,20 +381,19 @@
         .close-modal:hover {
             background: #ff3b6d;
             transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 94, 125, 0.3);
         }
 
-        /* Progress ring */
-        .progress-ring {
-            position: absolute;
-            bottom: 100px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-        }
-
-        .progress-ring-circle {
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            pointer-events: all;
         }
 
         /* Mobile adjustments */
@@ -420,12 +428,23 @@
                 margin: 10px auto;
                 width: 90%;
             }
+            
+            .secret-modal {
+                padding: 20px;
+                max-width: 90%;
+            }
+            
+            .secret-modal h3 {
+                font-size: 1.8em;
+            }
+            
+            .secret-modal p {
+                font-size: 1.1em;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/effects/AsciiEffect.js"></script>
 </head>
 <body>
     <div id="container">
@@ -482,8 +501,8 @@
                 <button class="control-btn" id="danceMode">
                     <span>💃</span> Dance Together
                 </button>
-                <button class="control-btn alt" id="asciiMode">
-                    <span>✨</span> Digital Love
+                <button class="control-btn alt" id="musicMode">
+                    <span>🎵</span> Romantic Music
                 </button>
             </div>
             
@@ -506,27 +525,30 @@
             </div>
         </div>
         
-        <!-- Secret Message Modal -->
+        <!-- Modal Overlay (Click to close) -->
+        <div class="modal-overlay hidden" id="modalOverlay"></div>
+        
+        <!-- Secret Message Modal - Now properly closes -->
         <div class="secret-modal hidden" id="secretModal">
             <h3>My Dearest Love ❤️</h3>
             <p id="secretMessageText">
                 You've discovered a secret message! This is just for you, my love.
             </p>
-            <button class="close-modal" id="closeModal">Close</button>
+            <button class="close-modal" id="closeModal">Close Message</button>
         </div>
     </div>
 
     <script>
         // Main Three.js variables
-        let scene, camera, renderer, controls, asciiEffect, asciiRenderer;
+        let scene, camera, renderer, controls;
         let hearts = [];
         let roses = [];
         let particles = [];
         let heartCount = 0;
         let startTime = Date.now();
         let currentScene = 0;
-        let isAsciiMode = false;
         let isDanceMode = false;
+        let isMusicPlaying = false;
         let dancePartners = [];
         let meterValue = 50;
         let secretMessages = [
@@ -612,9 +634,6 @@
             controls.maxDistance = 100;
             controls.maxPolarAngle = Math.PI / 2;
             
-            // Setup ASCII effect
-            setupAsciiEffect();
-            
             // Initialize scene
             changeScene(0);
             
@@ -622,12 +641,12 @@
             createEnvironment();
             createFloatingHearts(15);
             createRoses(3);
-            createParticles(100);
+            createParticles(50);
             
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
             
-            // Add click listener
+            // Add click listener for hearts
             renderer.domElement.addEventListener('click', onCanvasClick, false);
             
             // Setup UI events
@@ -638,14 +657,6 @@
             
             // Start animation loop
             animate();
-        }
-
-        // Setup ASCII effect
-        function setupAsciiEffect() {
-            asciiEffect = new THREE.AsciiEffect(renderer);
-            asciiEffect.setSize(window.innerWidth, window.innerHeight);
-            asciiEffect.domElement.style.color = '#ff5e7d';
-            asciiEffect.domElement.style.backgroundColor = '#000';
         }
 
         // Create environment
@@ -673,10 +684,18 @@
             // Create starfield
             createStarfield(1000);
             
-            // Add floating islands
-            for (let i = 0; i < 5; i++) {
-                createFloatingIsland(i);
-            }
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xff5e7d, 1);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xff99ac, 1, 100);
+            pointLight.position.set(-5, 5, 5);
+            scene.add(pointLight);
         }
 
         // Create floating hearts
@@ -729,11 +748,11 @@
             }
         }
 
-        // Create heart geometry with more detail
+        // Create heart geometry
         function createHeartGeometry() {
             const shape = new THREE.Shape();
             
-            // Create more detailed heart shape
+            // Create heart shape
             shape.moveTo(0, 0.25);
             shape.bezierCurveTo(0.25, 0.25, 0.25, 0, 0, 0);
             shape.bezierCurveTo(-0.25, 0, -0.25, 0.25, 0, 0.25);
@@ -775,30 +794,15 @@
             stem.position.y = 2;
             roseGroup.add(stem);
             
-            // Leaves
-            for (let j = 0; j < 3; j++) {
-                const leafGeometry = new THREE.SphereGeometry(0.3, 8, 8, 0, Math.PI);
-                const leafMaterial = new THREE.MeshPhongMaterial({ color: 0x32CD32 });
-                const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
-                leaf.position.set(
-                    Math.sin(j * Math.PI * 2 / 3) * 0.5,
-                    1 + j * 0.8,
-                    Math.cos(j * Math.PI * 2 / 3) * 0.5
-                );
-                leaf.rotation.x = Math.PI / 2;
-                leaf.scale.set(1, 0.3, 0.8);
-                roseGroup.add(leaf);
-            }
-            
-            // Rose petals (multiple layers)
+            // Rose petals (simplified)
             const petalColors = [0xff5e7d, 0xff4081, 0xf50057];
             
-            for (let layer = 0; layer < 4; layer++) {
-                const petalCount = 8 - layer * 2;
+            for (let layer = 0; layer < 3; layer++) {
+                const petalCount = 6;
                 const radius = 0.5 + layer * 0.3;
                 
                 for (let j = 0; j < petalCount; j++) {
-                    const petalGeometry = new THREE.SphereGeometry(0.4, 12, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+                    const petalGeometry = new THREE.SphereGeometry(0.4, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
                     const petalMaterial = new THREE.MeshPhongMaterial({ 
                         color: petalColors[layer % petalColors.length],
                         shininess: 100
@@ -833,7 +837,7 @@
             roseGroup.add(center);
             
             // Position rose
-            const angle = (index / roses.length) * Math.PI * 2;
+            const angle = (index / 3) * Math.PI * 2;
             const radius = 8;
             roseGroup.position.set(
                 Math.cos(angle) * radius,
@@ -886,10 +890,7 @@
             scene.add(particleSystem);
             
             particleSystem.userData = {
-                speed: 0.01,
-                update: function() {
-                    this.rotation.y += this.speed;
-                }
+                speed: 0.01
             };
             
             particles.push(particleSystem);
@@ -899,18 +900,14 @@
         function createStarfield(count) {
             const starGeometry = new THREE.BufferGeometry();
             const starPositions = new Float32Array(count * 3);
-            const starSizes = new Float32Array(count);
             
             for (let i = 0; i < count * 3; i += 3) {
                 starPositions[i] = (Math.random() - 0.5) * 200;
                 starPositions[i + 1] = (Math.random() - 0.5) * 200;
                 starPositions[i + 2] = (Math.random() - 0.5) * 200;
-                
-                starSizes[i / 3] = Math.random() * 2 + 0.5;
             }
             
             starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-            starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
             
             const starMaterial = new THREE.PointsMaterial({
                 color: 0xffffff,
@@ -922,53 +919,6 @@
             
             const stars = new THREE.Points(starGeometry, starMaterial);
             scene.add(stars);
-        }
-
-        // Create floating islands
-        function createFloatingIsland(index) {
-            const islandGroup = new THREE.Group();
-            
-            // Island base
-            const baseGeometry = new THREE.SphereGeometry(3, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
-            const baseMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x8B4513,
-                shininess: 20
-            });
-            const base = new THREE.Mesh(baseGeometry, baseMaterial);
-            base.scale.set(1, 0.3, 1);
-            islandGroup.add(base);
-            
-            // Top surface
-            const topGeometry = new THREE.CircleGeometry(2.8, 32);
-            const topMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0x228B22,
-                side: THREE.DoubleSide
-            });
-            const top = new THREE.Mesh(topGeometry, topMaterial);
-            top.rotation.x = -Math.PI / 2;
-            top.position.y = 0.01;
-            islandGroup.add(top);
-            
-            // Position island
-            const angle = (index / 5) * Math.PI * 2;
-            const radius = 20;
-            const height = 5 + index * 3;
-            
-            islandGroup.position.set(
-                Math.cos(angle) * radius,
-                height,
-                Math.sin(angle) * radius
-            );
-            
-            // Store animation properties
-            islandGroup.userData = {
-                originalY: height,
-                floatSpeed: 0.002 + index * 0.001,
-                rotationSpeed: 0.001
-            };
-            
-            islandGroup.castShadow = true;
-            scene.add(islandGroup);
         }
 
         // Create fireworks
@@ -985,7 +935,7 @@
             const fireworkGroup = new THREE.Group();
             const color = new THREE.Color().setHSL(Math.random(), 0.8, 0.7);
             
-            const particleCount = 100;
+            const particleCount = 30;
             const particleGeometry = new THREE.BufferGeometry();
             const positions = new Float32Array(particleCount * 3);
             const velocities = [];
@@ -996,16 +946,16 @@
                 positions[i + 2] = 0;
                 
                 velocities.push(new THREE.Vector3(
-                    (Math.random() - 0.5) * 10,
-                    Math.random() * 5 + 5,
-                    (Math.random() - 0.5) * 10
+                    (Math.random() - 0.5) * 3,
+                    Math.random() * 2 + 2,
+                    (Math.random() - 0.5) * 3
                 ));
             }
             
             particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             
             const particleMaterial = new THREE.PointsMaterial({
-                size: 0.5,
+                size: 0.3,
                 color: color,
                 transparent: true,
                 opacity: 1,
@@ -1017,16 +967,16 @@
             
             // Random position
             fireworkGroup.position.set(
-                (Math.random() - 0.5) * 30,
-                0,
-                (Math.random() - 0.5) * 30
+                (Math.random() - 0.5) * 15,
+                5,
+                (Math.random() - 0.5) * 15
             );
             
             scene.add(fireworkGroup);
             
             // Animate firework
-            let life = 2;
-            const gravity = -9.8;
+            let life = 1.5;
+            const gravity = -3;
             
             const animateFirework = () => {
                 life -= 0.016;
@@ -1047,7 +997,8 @@
                 }
                 
                 particles.geometry.attributes.position.needsUpdate = true;
-                particleMaterial.opacity = life / 2;
+                particleMaterial.opacity = life / 1.5;
+                particleMaterial.size = life * 0.3;
                 
                 requestAnimationFrame(animateFirework);
             };
@@ -1085,21 +1036,11 @@
                 head.position.y = 2.5;
                 dancer.add(head);
                 
-                // Arms
-                for (let j = -1; j <= 1; j += 2) {
-                    const armGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
-                    const arm = new THREE.Mesh(armGeometry, bodyMaterial);
-                    arm.position.set(j * 0.8, 1.5, 0);
-                    arm.rotation.z = j * Math.PI / 4;
-                    dancer.add(arm);
-                }
-                
                 // Position dancers
                 dancer.position.set(i * 3 - 1.5, 0, 0);
                 
                 dancer.userData = {
                     danceSpeed: 0.05 + i * 0.02,
-                    armRotation: 0,
                     bounceHeight: 0.5
                 };
                 
@@ -1110,8 +1051,6 @@
 
         // Handle canvas click
         function onCanvasClick(event) {
-            if (isAsciiMode) return;
-            
             // Calculate mouse position
             const mouse = new THREE.Vector2();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -1148,9 +1087,6 @@
             // Create collection effect
             createHeartCollectionEffect(heart.position);
             
-            // Play sound
-            playCollectionSound();
-            
             // Check for special milestones
             checkMilestones();
         }
@@ -1158,7 +1094,7 @@
         // Create heart collection effect
         function createHeartCollectionEffect(position) {
             // Create particles
-            const particleCount = 20;
+            const particleCount = 15;
             const particleGeometry = new THREE.BufferGeometry();
             const particlePositions = new Float32Array(particleCount * 3);
             
@@ -1171,7 +1107,7 @@
             particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
             
             const particleMaterial = new THREE.PointsMaterial({
-                size: 0.3,
+                size: 0.2,
                 color: 0xff5e7d,
                 transparent: true,
                 opacity: 1,
@@ -1185,9 +1121,9 @@
             const velocities = [];
             for (let i = 0; i < particleCount; i++) {
                 velocities.push(new THREE.Vector3(
-                    (Math.random() - 0.5) * 2,
-                    (Math.random() - 0.5) * 2 + 1,
-                    (Math.random() - 0.5) * 2
+                    (Math.random() - 0.5) * 1.5,
+                    (Math.random() - 0.5) * 1.5 + 0.8,
+                    (Math.random() - 0.5) * 1.5
                 ));
             }
             
@@ -1203,16 +1139,16 @@
                 const positions = particles.geometry.attributes.position.array;
                 
                 for (let i = 0; i < particleCount; i++) {
-                    positions[i * 3] += velocities[i].x;
-                    positions[i * 3 + 1] += velocities[i].y;
-                    positions[i * 3 + 2] += velocities[i].z;
+                    positions[i * 3] += velocities[i].x * 0.5;
+                    positions[i * 3 + 1] += velocities[i].y * 0.5;
+                    positions[i * 3 + 2] += velocities[i].z * 0.5;
                     
-                    velocities[i].y -= 0.1; // Gravity
+                    velocities[i].y -= 0.05; // Gravity
                 }
                 
                 particles.geometry.attributes.position.needsUpdate = true;
                 particleMaterial.opacity = life;
-                particleMaterial.size = life * 0.5;
+                particleMaterial.size = life * 0.2;
                 
                 requestAnimationFrame(animateParticles);
             };
@@ -1227,21 +1163,15 @@
         function createFloatingText(text, position, color = 0xff5e7d) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 512;
-            canvas.height = 256;
+            canvas.width = 256;
+            canvas.height = 128;
             
-            // Draw text with glow effect
-            context.font = 'bold 80px Arial';
+            // Draw text
+            context.font = 'bold 40px Arial';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            
-            // Glow effect
-            context.shadowColor = `#${color.toString(16)}`;
-            context.shadowBlur = 20;
             context.fillStyle = `#${color.toString(16)}`;
-            context.fillText(text, 256, 128);
-            
-            context.shadowBlur = 0;
+            context.fillText(text, 128, 64);
             
             const texture = new THREE.CanvasTexture(canvas);
             const spriteMaterial = new THREE.SpriteMaterial({ 
@@ -1251,7 +1181,7 @@
             const sprite = new THREE.Sprite(spriteMaterial);
             
             sprite.position.copy(position);
-            sprite.scale.set(5, 2.5, 1);
+            sprite.scale.set(3, 1.5, 1);
             sprite.userData = { life: 1.0 };
             
             scene.add(sprite);
@@ -1273,33 +1203,6 @@
             animateSprite();
         }
 
-        // Play collection sound
-        function playCollectionSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Create multiple oscillators for a richer sound
-                for (let i = 0; i < 3; i++) {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(523.25 + i * 100, audioContext.currentTime);
-                    oscillator.type = i === 0 ? 'sine' : 'triangle';
-                    
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-                    
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                }
-            } catch (e) {
-                // Audio not supported
-            }
-        }
-
         // Check for milestones
         function checkMilestones() {
             const milestones = [5, 10, 25, 50, 100];
@@ -1309,10 +1212,6 @@
                 
                 if (heartCount === 10) {
                     createFireworks(5);
-                } else if (heartCount === 25) {
-                    createSecretGarden();
-                } else if (heartCount === 50) {
-                    createLoveVortex();
                 }
             }
         }
@@ -1320,11 +1219,11 @@
         // Show milestone message
         function showMilestoneMessage(count) {
             const messages = {
-                5: "You've collected 5 hearts! 💕",
-                10: "10 hearts! Our love is growing! 🌟",
-                25: "25 hearts! You have half my heart! 💝",
-                50: "50 hearts! You have my whole heart! ❤️",
-                100: "100 hearts! Infinite love forever! 💫"
+                5: "5 hearts! 💕",
+                10: "10 hearts! 🌟",
+                25: "25 hearts! 💝",
+                50: "50 hearts! ❤️",
+                100: "100 hearts! 💫"
             };
             
             if (messages[count]) {
@@ -1334,20 +1233,19 @@
 
         // Create secret garden
         function createSecretGarden() {
-            // Create special flowers
-            for (let i = 0; i < 10; i++) {
-                createSpecialFlower(i);
-            }
-            
             // Update message
             const messageContainer = document.querySelector('.message');
             messageContainer.innerHTML = `
                 <h2>Secret Garden Unlocked! 🌸</h2>
                 <p>You've discovered our secret garden, a special place that exists only in our hearts.</p>
-                <p>Here, our love blooms eternally, with flowers that never wither and moments that never fade.</p>
             `;
             
             document.querySelector('.message-container').classList.add('pulse');
+            
+            // Create special flowers
+            for (let i = 0; i < 5; i++) {
+                createSpecialFlower(i);
+            }
         }
 
         // Create special flower
@@ -1355,25 +1253,25 @@
             const flowerGroup = new THREE.Group();
             
             // Stem
-            const stemGeometry = new THREE.CylinderGeometry(0.05, 0.08, 3, 8);
+            const stemGeometry = new THREE.CylinderGeometry(0.05, 0.08, 2, 8);
             const stemMaterial = new THREE.MeshPhongMaterial({ color: 0x32CD32 });
             const stem = new THREE.Mesh(stemGeometry, stemMaterial);
             flowerGroup.add(stem);
             
             // Flower
-            const petalCount = 12;
-            const petalColor = new THREE.Color().setHSL(index / 10, 0.8, 0.7);
+            const petalCount = 6;
+            const petalColor = new THREE.Color().setHSL(index / 5, 0.8, 0.7);
             
             for (let i = 0; i < petalCount; i++) {
-                const petalGeometry = new THREE.SphereGeometry(0.3, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+                const petalGeometry = new THREE.SphereGeometry(0.2, 8, 8, 0, Math.PI * 2, 0, Math.PI / 2);
                 const petalMaterial = new THREE.MeshPhongMaterial({ color: petalColor });
                 const petal = new THREE.Mesh(petalGeometry, petalMaterial);
                 
                 const angle = (i / petalCount) * Math.PI * 2;
                 petal.position.set(
-                    Math.cos(angle) * 0.8,
+                    Math.cos(angle) * 0.6,
                     1.5,
-                    Math.sin(angle) * 0.8
+                    Math.sin(angle) * 0.6
                 );
                 
                 petal.rotation.y = angle;
@@ -1383,15 +1281,8 @@
                 flowerGroup.add(petal);
             }
             
-            // Center
-            const centerGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-            const centerMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
-            const center = new THREE.Mesh(centerGeometry, centerMaterial);
-            center.position.y = 1.5;
-            flowerGroup.add(center);
-            
             // Position
-            const angle = (index / 10) * Math.PI * 2;
+            const angle = (index / 5) * Math.PI * 2;
             const radius = 8;
             flowerGroup.position.set(
                 Math.cos(angle) * radius,
@@ -1399,65 +1290,7 @@
                 Math.sin(angle) * radius
             );
             
-            // Add glow
-            const glowGeometry = new THREE.SphereGeometry(1, 16, 16);
-            const glowMaterial = new THREE.MeshBasicMaterial({
-                color: petalColor,
-                transparent: true,
-                opacity: 0.3,
-                side: THREE.BackSide
-            });
-            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-            glow.position.y = 1.5;
-            flowerGroup.add(glow);
-            
-            flowerGroup.userData = {
-                rotationSpeed: 0.01,
-                floatSpeed: 0.005
-            };
-            
             scene.add(flowerGroup);
-        }
-
-        // Create love vortex
-        function createLoveVortex() {
-            const vortexGroup = new THREE.Group();
-            
-            // Create spiral of hearts
-            const heartCount = 100;
-            const heartGeometry = createHeartGeometry();
-            
-            for (let i = 0; i < heartCount; i++) {
-                const progress = i / heartCount;
-                const angle = progress * Math.PI * 8;
-                const radius = progress * 10;
-                const height = progress * 20 - 10;
-                
-                const heartMaterial = new THREE.MeshPhongMaterial({ 
-                    color: new THREE.Color().setHSL(progress, 0.8, 0.7),
-                    transparent: true,
-                    opacity: 0.8
-                });
-                
-                const heart = new THREE.Mesh(heartGeometry, heartMaterial);
-                heart.position.set(
-                    Math.cos(angle) * radius,
-                    height,
-                    Math.sin(angle) * radius
-                );
-                
-                heart.scale.setScalar(0.3);
-                heart.rotation.y = angle;
-                
-                vortexGroup.add(heart);
-            }
-            
-            vortexGroup.position.y = 5;
-            scene.add(vortexGroup);
-            
-            vortexGroup.userData = {
-                rotationSpeed: 0.02
-            };
         }
 
         // Update love meter
@@ -1490,78 +1323,100 @@
             // Update scene background
             scene.background = new THREE.Color(sceneConfig.bgColor);
             
-            if (scene.fog) {
-                scene.fog.color = new THREE.Color(sceneConfig.fogColor);
-            }
-            
             // Update scene name
             document.getElementById('sceneName').textContent = sceneConfig.name;
+        }
+
+        // Show secret message modal
+        function showSecretMessage() {
+            const randomMessage = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+            const messageText = document.getElementById('secretMessageText');
+            const modal = document.getElementById('secretModal');
+            const overlay = document.getElementById('modalOverlay');
             
-            // Update lighting
-            scene.traverse((object) => {
-                if (object.isPointLight || object.isDirectionalLight) {
-                    if (object.isPointLight) {
-                        object.color.setHex(sceneConfig.lightColor);
-                    }
-                }
-            });
+            messageText.textContent = randomMessage;
             
-            // Update particle colors if needed
-            if (sceneConfig.particleColor) {
-                particles.forEach(particle => {
-                    if (particle.material instanceof THREE.PointsMaterial) {
-                        particle.material.color.setHex(sceneConfig.particleColor);
-                    }
-                });
-            }
+            // Show overlay and modal
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            modal.classList.remove('fade-out');
+            modal.classList.add('fade-in');
+        }
+
+        // Hide secret message modal
+        function hideSecretMessage() {
+            const modal = document.getElementById('secretModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            // Add fade-out animation
+            modal.classList.remove('fade-in');
+            modal.classList.add('fade-out');
+            
+            // Hide after animation completes
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }, 500); // Match animation duration
+        }
+
+        // Toggle music (placeholder - no actual music file)
+        function toggleMusic() {
+            isMusicPlaying = !isMusicPlaying;
+            createFloatingText(
+                isMusicPlaying ? "Music On 🎵" : "Music Off 🔇", 
+                new THREE.Vector3(0, 5, 0), 
+                isMusicPlaying ? 0x9d4edd : 0x888888
+            );
         }
 
         // Setup UI events
         function setupUIEvents() {
-            document.getElementById('changeScene').addEventListener('click', () => {
+            // Change Scene Button
+            document.getElementById('changeScene').addEventListener('click', function() {
                 currentScene = (currentScene + 1) % scenes.length;
                 changeScene(currentScene);
+                createFloatingText("New Scene! 🌟", new THREE.Vector3(0, 5, 0), 0xff5e7d);
             });
             
-            document.getElementById('addHearts').addEventListener('click', () => {
+            // Add Hearts Button
+            document.getElementById('addHearts').addEventListener('click', function() {
                 createFloatingHearts(10);
                 createFloatingText("New Hearts! 💕", new THREE.Vector3(0, 5, 0), 0xff99ac);
             });
             
-            document.getElementById('toggleRose').addEventListener('click', () => {
+            // Toggle Rose Button
+            document.getElementById('toggleRose').addEventListener('click', function() {
                 roses.forEach(rose => {
                     rose.visible = !rose.visible;
-                    
-                    // Add glow effect when toggling
-                    if (rose.visible) {
-                        createFloatingText("Roses Bloom! 🌹", rose.position, 0xff4081);
-                    }
                 });
+                const isVisible = roses[0] ? roses[0].visible : false;
+                createFloatingText(
+                    isVisible ? "Roses Bloom! 🌹" : "Roses Hidden", 
+                    new THREE.Vector3(0, 5, 0), 
+                    isVisible ? 0xff4081 : 0x888888
+                );
             });
             
-            document.getElementById('loveMessage').addEventListener('click', () => {
-                const randomMessage = secretMessages[Math.floor(Math.random() * secretMessages.length)];
-                const modal = document.getElementById('secretModal');
-                const messageText = document.getElementById('secretMessageText');
-                
-                messageText.textContent = randomMessage;
-                modal.classList.remove('hidden');
-                
-                // Create floating hearts around message
+            // Love Message Button
+            document.getElementById('loveMessage').addEventListener('click', function() {
+                showSecretMessage();
                 createFloatingHearts(3);
             });
             
-            document.getElementById('secretGarden').addEventListener('click', () => {
+            // Secret Garden Button
+            document.getElementById('secretGarden').addEventListener('click', function() {
                 createSecretGarden();
                 createFloatingText("Secret Garden 🌸", new THREE.Vector3(0, 10, 0), 0x9d4edd);
             });
             
-            document.getElementById('fireworks').addEventListener('click', () => {
+            // Fireworks Button
+            document.getElementById('fireworks').addEventListener('click', function() {
                 createFireworks(10);
                 createFloatingText("Love Fireworks! 🎆", new THREE.Vector3(0, 15, 0), 0xff9e00);
             });
             
-            document.getElementById('danceMode').addEventListener('click', () => {
+            // Dance Mode Button
+            document.getElementById('danceMode').addEventListener('click', function() {
                 isDanceMode = !isDanceMode;
                 
                 if (isDanceMode) {
@@ -1570,24 +1425,30 @@
                 } else {
                     dancePartners.forEach(partner => scene.remove(partner));
                     dancePartners = [];
+                    createFloatingText("Dance Ended", new THREE.Vector3(0, 5, 0), 0x888888);
                 }
             });
             
-            document.getElementById('asciiMode').addEventListener('click', () => {
-                isAsciiMode = !isAsciiMode;
-                
-                if (isAsciiMode) {
-                    document.getElementById('canvas-container').innerHTML = '';
-                    document.getElementById('canvas-container').appendChild(asciiEffect.domElement);
-                    createFloatingText("Digital Love 💾", new THREE.Vector3(0, 5, 0), 0xffffff);
-                } else {
-                    document.getElementById('canvas-container').innerHTML = '';
-                    document.getElementById('canvas-container').appendChild(renderer.domElement);
-                }
+            // Music Mode Button
+            document.getElementById('musicMode').addEventListener('click', function() {
+                toggleMusic();
             });
             
-            document.getElementById('closeModal').addEventListener('click', () => {
-                document.getElementById('secretModal').classList.add('hidden');
+            // Close Modal Button - FIXED: Now properly closes modal
+            document.getElementById('closeModal').addEventListener('click', function() {
+                hideSecretMessage();
+            });
+            
+            // Close Modal by clicking overlay
+            document.getElementById('modalOverlay').addEventListener('click', function() {
+                hideSecretMessage();
+            });
+            
+            // Close Modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' || event.key === 'Esc') {
+                    hideSecretMessage();
+                }
             });
         }
 
@@ -1596,10 +1457,6 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            
-            if (isAsciiMode) {
-                asciiEffect.setSize(window.innerWidth, window.innerHeight);
-            }
         }
 
         // Animation loop
@@ -1609,7 +1466,7 @@
             const time = Date.now() * 0.001;
             
             // Animate hearts
-            hearts.forEach(heart => {
+            hearts.forEach((heart, index) => {
                 if (heart.userData && !heart.userData.collected) {
                     // Floating animation
                     heart.position.y = heart.userData.originalY + 
@@ -1624,11 +1481,14 @@
                     // Pulsing scale
                     const pulse = Math.sin(time * heart.userData.pulseSpeed) * 0.2 + 1;
                     heart.scale.setScalar(pulse * heart.userData.originalScale);
-                    
-                    // Color cycling
-                    if (heart.material.color) {
-                        const hue = (time * 0.1 + heart.userData.originalY * 0.01) % 1;
-                        heart.material.color.setHSL(hue, 0.7, 0.7);
+                } else if (heart.userData && heart.userData.collected) {
+                    // Remove collected hearts after animation
+                    if (heart.scale.x > 0.1) {
+                        heart.scale.multiplyScalar(0.9);
+                        heart.rotation.y += 0.1;
+                    } else {
+                        scene.remove(heart);
+                        hearts.splice(index, 1);
                     }
                 }
             });
@@ -1648,8 +1508,8 @@
             
             // Animate particles
             particles.forEach(particle => {
-                if (particle.userData.update) {
-                    particle.userData.update();
+                if (particle.userData) {
+                    particle.rotation.y += particle.userData.speed || 0.01;
                 }
             });
             
@@ -1660,14 +1520,6 @@
                         dancer.userData.bounceHeight;
                     
                     dancer.rotation.y = time * dancer.userData.danceSpeed;
-                    
-                    // Animate arms
-                    dancer.children.forEach(child => {
-                        if (child.geometry instanceof THREE.CylinderGeometry) {
-                            child.rotation.z = Math.sin(time * dancer.userData.danceSpeed * 2) * 
-                                Math.PI / 4;
-                        }
-                    });
                 });
             }
             
@@ -1675,11 +1527,7 @@
             controls.update();
             
             // Render
-            if (isAsciiMode) {
-                asciiEffect.render(scene, camera);
-            } else {
-                renderer.render(scene, camera);
-            }
+            renderer.render(scene, camera);
         }
 
         // Initialize when page loads

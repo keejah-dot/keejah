@@ -6,8 +6,13 @@
 <title>From Keejah to Nakanje ❤️</title>
 
 <style>
-body{
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
     height:100vh;
     display:flex;
     justify-content:center;
@@ -17,16 +22,16 @@ body{
     color:white;
 }
 
-/* Background photo */
+/* ========== Background Photo ========== */
 .bg{
     position:fixed;
     inset:0;
     background:url("her.jpg") center/cover no-repeat;
-    filter: blur(6px) brightness(0.55);
+    filter:blur(6px) brightness(0.55);
     z-index:-2;
 }
 
-/* overlay */
+/* Pink overlay */
 .overlay{
     position:fixed;
     inset:0;
@@ -34,47 +39,46 @@ body{
     z-index:-1;
 }
 
-/* card */
+/* ========== Title ========== */
+h1{
+    position:absolute;
+    top:30px;
+    font-size:32px;
+    text-shadow:0 0 15px white;
+    animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+    from{ text-shadow:0 0 10px white; }
+    to{ text-shadow:0 0 25px pink; }
+}
+
+/* ========== Card ========== */
 .card{
     width:90%;
     max-width:650px;
     height:260px;
     border-radius:25px;
     background:rgba(255,255,255,0.12);
-    backdrop-filter: blur(15px);
+    backdrop-filter:blur(15px);
     box-shadow:0 0 40px rgba(255,255,255,0.35);
     display:flex;
     justify-content:center;
     align-items:center;
-    overflow:hidden;
     position:relative;
+    overflow:hidden;
     padding:25px;
 }
 
-/* title */
-h1{
-    position:absolute;
-    top:30px;
-    font-size:30px;
-    text-shadow:0 0 12px white;
-}
-
-/* signature */
-.signature{
-    position:absolute;
-    bottom:20px;
-    font-size:16px;
-    font-style:italic;
-}
-
-/* sliding messages */
+/* ========== Sliding Text ========== */
 .slide{
     position:absolute;
     width:90%;
     font-size:20px;
+    text-align:center;
     opacity:0;
     transform:translateX(100%);
-    animation: slideText 25s linear infinite;
+    animation:slideText 25s linear infinite;
 }
 
 .slide:nth-child(1){ animation-delay:0s; }
@@ -91,20 +95,34 @@ h1{
     100%{opacity:0; transform:translateX(-100%);}
 }
 
-/* floating hearts */
+/* ========== Signature ========== */
+.signature{
+    position:absolute;
+    bottom:15px;
+    font-style:italic;
+    font-size:15px;
+    opacity:0.9;
+}
+
+/* ========== Floating Hearts ========== */
 .heart{
     position:absolute;
     font-size:20px;
-    animation: float 6s linear infinite;
-    opacity:0.7;
+    animation:float 6s linear infinite;
+    opacity:0.8;
 }
 
 @keyframes float{
-    from{transform:translateY(100vh);}
-    to{transform:translateY(-10vh); opacity:0;}
+    from{
+        transform:translateY(100vh);
+    }
+    to{
+        transform:translateY(-10vh);
+        opacity:0;
+    }
 }
 
-/* music button */
+/* ========== Music Button ========== */
 .music-btn{
     position:fixed;
     bottom:20px;
@@ -113,20 +131,16 @@ h1{
     color:#ff4d6d;
     border:none;
     border-radius:20px;
-    padding:10px 15px;
-    cursor:pointer;
+    padding:10px 16px;
     font-weight:bold;
+    cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🎵 Background Music -->
-<audio id="bgMusic" autoplay loop>
-    <source src="love.mp3" type="audio/mpeg">
-</audio>
-
+<!-- Background -->
 <div class="bg"></div>
 <div class="overlay"></div>
 
@@ -142,12 +156,37 @@ h1{
     <div class="signature">From Keejah to Nakanje 💖</div>
 </div>
 
-<button class="music-btn" onclick="toggleMusic()">🔊 Music</button>
+<!-- 🎵 Music -->
+<audio id="bgMusic" loop>
+    <source src="love.mp3" type="audio/mpeg">
+</audio>
+
+<button class="music-btn" id="playBtn">❤️ Play Music</button>
 
 <script>
+const music = document.getElementById("bgMusic");
+const btn = document.getElementById("playBtn");
+
+/* play after first click anywhere */
+document.body.addEventListener("click", () => {
+    music.volume = 0.4;
+    music.play();
+}, { once:true });
+
+/* toggle button */
+btn.onclick = () => {
+    if(music.paused){
+        music.play();
+        btn.innerText = "🔊 Pause Music";
+    }else{
+        music.pause();
+        btn.innerText = "❤️ Play Music";
+    }
+};
+
 /* floating hearts */
 function createHeart(){
-    const heart = document.createElement("div");
+    const heart=document.createElement("div");
     heart.className="heart";
     heart.innerHTML="❤️";
     heart.style.left=Math.random()*100+"vw";
@@ -157,17 +196,6 @@ function createHeart(){
     setTimeout(()=>heart.remove(),6000);
 }
 setInterval(createHeart,300);
-
-/* music toggle */
-const music = document.getElementById("bgMusic");
-
-function toggleMusic(){
-    if(music.paused){
-        music.play();
-    } else {
-        music.pause();
-    }
-}
 </script>
 
 </body>

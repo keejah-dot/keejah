@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>For You ❤️</title>
+<title>From Keejah to Nakanje ❤️</title>
 
 <style>
 body{
@@ -13,30 +13,62 @@ body{
     justify-content:center;
     align-items:center;
     font-family:'Segoe UI',sans-serif;
-    background: linear-gradient(135deg,#ff4d6d,#ff8fa3,#ffc2d1);
     overflow:hidden;
     color:white;
 }
 
-/* Card */
+/* Background photo */
+.bg{
+    position:fixed;
+    inset:0;
+    background:url("her.jpg") center/cover no-repeat;
+    filter: blur(6px) brightness(0.55);
+    z-index:-2;
+}
+
+/* soft pink overlay */
+.overlay{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg,#ff4d6d66,#ff8fa366);
+    z-index:-1;
+}
+
+/* card */
 .card{
     width:90%;
-    max-width:600px;
-    height:220px;
+    max-width:650px;
+    height:250px;
     border-radius:25px;
-    background: rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.12);
     backdrop-filter: blur(15px);
-    box-shadow:0 0 40px rgba(255,255,255,0.3);
+    box-shadow:0 0 40px rgba(255,255,255,0.35);
     display:flex;
     justify-content:center;
     align-items:center;
-    padding:30px;
-    text-align:center;
     overflow:hidden;
     position:relative;
+    padding:25px;
 }
 
-/* Sliding text */
+/* title */
+h1{
+    position:absolute;
+    top:30px;
+    font-size:30px;
+    text-shadow:0 0 12px white;
+}
+
+/* signature */
+.signature{
+    position:absolute;
+    bottom:25px;
+    font-size:16px;
+    opacity:0.9;
+    font-style:italic;
+}
+
+/* sliding text */
 .slide{
     position:absolute;
     width:90%;
@@ -44,25 +76,25 @@ body{
     line-height:1.6;
     opacity:0;
     transform:translateX(100%);
-    animation: slideText 20s linear infinite;
+    animation: slideText 25s linear infinite;
+    text-align:center;
 }
 
-/* Each line appears at different time */
 .slide:nth-child(1){ animation-delay:0s; }
-.slide:nth-child(2){ animation-delay:4s; }
-.slide:nth-child(3){ animation-delay:8s; }
-.slide:nth-child(4){ animation-delay:12s; }
-.slide:nth-child(5){ animation-delay:16s; }
+.slide:nth-child(2){ animation-delay:5s; }
+.slide:nth-child(3){ animation-delay:10s; }
+.slide:nth-child(4){ animation-delay:15s; }
+.slide:nth-child(5){ animation-delay:20s; }
 
 @keyframes slideText{
     0%{opacity:0; transform:translateX(100%);}
-    5%{opacity:1;}
+    8%{opacity:1;}
     20%{opacity:1; transform:translateX(0);}
     25%{opacity:0;}
     100%{opacity:0; transform:translateX(-100%);}
 }
 
-/* Floating hearts */
+/* hearts */
 .heart{
     position:absolute;
     font-size:20px;
@@ -71,173 +103,41 @@ body{
 }
 
 @keyframes float{
-    from{
-        transform:translateY(100vh);
-        opacity:0.7;
-    }
-    to{
-        transform:translateY(-10vh);
-        opacity:0;
-    }
-}
-
-/* Title */
-h1{
-    position:absolute;
-    top:40px;
-    font-size:32px;
-    text-shadow:0 0 15px white;
+    from{transform:translateY(100vh); opacity:0.7;}
+    to{transform:translateY(-10vh); opacity:0;}
 }
 </style>
 </head>
 
 <body>
 
-<h1>Happy Valentine's Day ❤️</h1>
+<div class="bg"></div>
+<div class="overlay"></div>
+
+<h1>Happy Valentine’s Day ❤️</h1>
 
 <div class="card">
     <div class="slide">Your message touched my heart more than you know 💕</div>
     <div class="slide">You are my safe place, my comfort, my peace 🫶</div>
-    <div class="slide">Thank you for loving me and never walking away 🤍</div>
+    <div class="slide">Thank you for staying with me through everything 🤍</div>
     <div class="slide">Life feels brighter and calmer with you in it ✨</div>
     <div class="slide">Today and always… it will always be you ❤️</div>
+
+    <div class="signature">From Keejah to Nakanje 💖</div>
 </div>
 
 <script>
 function createHeart(){
     const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤️";
-    heart.style.left = Math.random()*100 + "vw";
-    heart.style.fontSize = (Math.random()*20+15) + "px";
-    heart.style.animationDuration = (Math.random()*3+4) + "s";
+    heart.className="heart";
+    heart.innerHTML="❤️";
+    heart.style.left=Math.random()*100+"vw";
+    heart.style.fontSize=(Math.random()*20+15)+"px";
+    heart.style.animationDuration=(Math.random()*3+4)+"s";
     document.body.appendChild(heart);
-
     setTimeout(()=>heart.remove(),6000);
 }
-setInterval(createHeart, 300);
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>For You ❤️</title>
-
-<style>
-body{
-    margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-family:'Segoe UI',sans-serif;
-    background: linear-gradient(135deg,#ff4d6d,#ff8fa3,#ffc2d1);
-    overflow:hidden;
-    color:white;
-}
-
-/* Card */
-.card{
-    width:90%;
-    max-width:600px;
-    height:220px;
-    border-radius:25px;
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(15px);
-    box-shadow:0 0 40px rgba(255,255,255,0.3);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:30px;
-    text-align:center;
-    overflow:hidden;
-    position:relative;
-}
-
-/* Sliding text */
-.slide{
-    position:absolute;
-    width:90%;
-    font-size:20px;
-    line-height:1.6;
-    opacity:0;
-    transform:translateX(100%);
-    animation: slideText 20s linear infinite;
-}
-
-/* Each line appears at different time */
-.slide:nth-child(1){ animation-delay:0s; }
-.slide:nth-child(2){ animation-delay:4s; }
-.slide:nth-child(3){ animation-delay:8s; }
-.slide:nth-child(4){ animation-delay:12s; }
-.slide:nth-child(5){ animation-delay:16s; }
-
-@keyframes slideText{
-    0%{opacity:0; transform:translateX(100%);}
-    5%{opacity:1;}
-    20%{opacity:1; transform:translateX(0);}
-    25%{opacity:0;}
-    100%{opacity:0; transform:translateX(-100%);}
-}
-
-/* Floating hearts */
-.heart{
-    position:absolute;
-    font-size:20px;
-    animation: float 6s linear infinite;
-    opacity:0.7;
-}
-
-@keyframes float{
-    from{
-        transform:translateY(100vh);
-        opacity:0.7;
-    }
-    to{
-        transform:translateY(-10vh);
-        opacity:0;
-    }
-}
-
-/* Title */
-h1{
-    position:absolute;
-    top:40px;
-    font-size:32px;
-    text-shadow:0 0 15px white;
-}
-</style>
-</head>
-
-<body>
-
-<h1>Happy Valentine's Day ❤️</h1>
-
-<div class="card">
-    <div class="slide">Your message touched my heart more than you know 💕</div>
-    <div class="slide">You are my safe place, my comfort, my peace 🫶</div>
-    <div class="slide">Thank you for loving me and never walking away 🤍</div>
-    <div class="slide">Life feels brighter and calmer with you in it ✨</div>
-    <div class="slide">Today and always… it will always be you ❤️</div>
-</div>
-
-<script>
-function createHeart(){
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤️";
-    heart.style.left = Math.random()*100 + "vw";
-    heart.style.fontSize = (Math.random()*20+15) + "px";
-    heart.style.animationDuration = (Math.random()*3+4) + "s";
-    document.body.appendChild(heart);
-
-    setTimeout(()=>heart.remove(),6000);
-}
-setInterval(createHeart, 300);
+setInterval(createHeart,300);
 </script>
 
 </body>

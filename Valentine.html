@@ -26,7 +26,7 @@ body{
     z-index:-2;
 }
 
-/* soft pink overlay */
+/* overlay */
 .overlay{
     position:fixed;
     inset:0;
@@ -38,7 +38,7 @@ body{
 .card{
     width:90%;
     max-width:650px;
-    height:250px;
+    height:260px;
     border-radius:25px;
     background:rgba(255,255,255,0.12);
     backdrop-filter: blur(15px);
@@ -62,22 +62,19 @@ h1{
 /* signature */
 .signature{
     position:absolute;
-    bottom:25px;
+    bottom:20px;
     font-size:16px;
-    opacity:0.9;
     font-style:italic;
 }
 
-/* sliding text */
+/* sliding messages */
 .slide{
     position:absolute;
     width:90%;
     font-size:20px;
-    line-height:1.6;
     opacity:0;
     transform:translateX(100%);
     animation: slideText 25s linear infinite;
-    text-align:center;
 }
 
 .slide:nth-child(1){ animation-delay:0s; }
@@ -94,7 +91,7 @@ h1{
     100%{opacity:0; transform:translateX(-100%);}
 }
 
-/* hearts */
+/* floating hearts */
 .heart{
     position:absolute;
     font-size:20px;
@@ -103,13 +100,32 @@ h1{
 }
 
 @keyframes float{
-    from{transform:translateY(100vh); opacity:0.7;}
+    from{transform:translateY(100vh);}
     to{transform:translateY(-10vh); opacity:0;}
+}
+
+/* music button */
+.music-btn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:white;
+    color:#ff4d6d;
+    border:none;
+    border-radius:20px;
+    padding:10px 15px;
+    cursor:pointer;
+    font-weight:bold;
 }
 </style>
 </head>
 
 <body>
+
+<!-- 🎵 Background Music -->
+<audio id="bgMusic" autoplay loop>
+    <source src="love.mp3" type="audio/mpeg">
+</audio>
 
 <div class="bg"></div>
 <div class="overlay"></div>
@@ -126,7 +142,10 @@ h1{
     <div class="signature">From Keejah to Nakanje 💖</div>
 </div>
 
+<button class="music-btn" onclick="toggleMusic()">🔊 Music</button>
+
 <script>
+/* floating hearts */
 function createHeart(){
     const heart = document.createElement("div");
     heart.className="heart";
@@ -138,6 +157,17 @@ function createHeart(){
     setTimeout(()=>heart.remove(),6000);
 }
 setInterval(createHeart,300);
+
+/* music toggle */
+const music = document.getElementById("bgMusic");
+
+function toggleMusic(){
+    if(music.paused){
+        music.play();
+    } else {
+        music.pause();
+    }
+}
 </script>
 
 </body>
